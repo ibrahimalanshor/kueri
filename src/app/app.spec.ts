@@ -13,8 +13,8 @@ describe('class App', () => {
     expect(typeof App).toBe('function');
   });
 
-  describe('.listen()', () => {
-    test('exists in prototype', () => {
+  describe('.prototype.listen', () => {
+    test('exists', () => {
       expect(App.prototype.listen).toBeDefined();
     });
     test('callable', () => {
@@ -25,6 +25,25 @@ describe('class App', () => {
         app.listen();
 
         await supertest('http://localhost:3000').get('/').expect(404);
+      } finally {
+        app.stop();
+      }
+    });
+  });
+
+  describe('.prototype.setPort', () => {
+    test('exist', () => {
+      expect(App.prototype.setPort).toBeDefined();
+    });
+    test('callable', () => {
+      expect(typeof App.prototype.listen).toBe('function');
+    });
+    test('listen to new port', async () => {
+      try {
+        app.setPort(5000);
+        app.listen();
+
+        await supertest('http://localhost:5000').get('/').expect(404);
       } finally {
         app.stop();
       }
