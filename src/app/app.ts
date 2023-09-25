@@ -12,9 +12,9 @@ export class App {
 
   listen(cb?: Function) {
     this.server = this.application.listen(this.port, () => {
-      cb
-        ? cb.call(null, this.port)
-        : console.log(`app running at ${this.port}`);
+      if (cb) {
+        cb.call(null, this.port);
+      }
     });
   }
 
