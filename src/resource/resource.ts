@@ -1,8 +1,10 @@
 export interface GetAllOptions {
   paginated?: boolean;
   limit?: number;
+  offset?: number;
   page?: {
     size?: number;
+    number?: number;
   };
 }
 export interface PaginatedResource<T> {
