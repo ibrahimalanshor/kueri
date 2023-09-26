@@ -6,6 +6,7 @@ export interface GetAllOptions {
     size?: number;
     number?: number;
   };
+  sort?: string;
 }
 export interface PaginatedResource<T> {
   meta: {

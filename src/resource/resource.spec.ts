@@ -26,17 +26,21 @@ describe.only('class Resource', () => {
     async getAll(
       options?: GetAllOptions,
     ): Promise<User[] | PaginatedResource<User>> {
+      const userData = options?.sort
+        ? [...users].sort((user, nextUser) => nextUser.id - user.id)
+        : users;
+
       if (options?.paginated) {
         const offset =
           ((options?.page?.number ?? 1) - 1) * (options?.page?.size ?? 10);
         const data =
           options?.page?.size || offset
-            ? users.slice(offset, (options?.page?.size ?? 10) + offset)
-            : users;
+            ? userData.slice(offset, (options?.page?.size ?? 10) + offset)
+            : userData;
 
         return {
           meta: {
-            total: users.length,
+            total: userData.length,
           },
           data: data,
         };
@@ -44,11 +48,11 @@ describe.only('class Resource', () => {
 
       const data =
         options?.limit || options?.offset
-          ? users.slice(
+          ? userData.slice(
               options?.offset ?? 0,
               (options?.limit ?? 10) + (options?.offset ?? 0),
             )
-          : users;
+          : userData;
 
       return data;
     }
@@ -84,6 +88,12 @@ describe.only('class Resource', () => {
       })) as User[];
 
       expect(data[0]).toEqual(users[1]);
+    });
+
+    test('return sorted', async () => {
+      const data = (await new UserResource().getAll({ sort: '-id' })) as User[];
+
+      expect(data[0]).toEqual(users[users.length - 1]);
     });
 
     describe('paginated', () => {
