@@ -1,5 +1,6 @@
 export interface GetAllOptions {
   paginated?: boolean;
+  limit?: number;
 }
 export interface PaginatedResource<T> {
   meta: {

@@ -16,22 +16,28 @@ describe.only('class Resource', () => {
       id: 2,
       name: 'user',
     },
+    {
+      id: 3,
+      name: 'another',
+    },
   ];
 
   class UserResource extends Resource<User> {
     async getAll(
       options?: GetAllOptions,
     ): Promise<User[] | PaginatedResource<User>> {
+      const data = options?.limit ? users.slice(0, options?.limit) : users;
+
       if (options?.paginated) {
         return {
           meta: {
             total: users.length,
           },
-          data: users,
+          data: data,
         };
       }
 
-      return users;
+      return data;
     }
   }
 
@@ -48,18 +54,26 @@ describe.only('class Resource', () => {
       expect(new UserResource().getAll()).toBeInstanceOf(Promise);
     });
 
-    test('return all data', async () => {
+    test('return all', async () => {
       await expect(new UserResource().getAll()).resolves.toEqual(users);
     });
 
-    test('return all paginated data', async () => {
-      await expect(
-        new UserResource().getAll({ paginated: true }),
-      ).resolves.toEqual({
-        meta: {
-          total: users.length,
-        },
-        data: users,
+    test('return limited', async () => {
+      const data = await new UserResource().getAll({ limit: 1 });
+
+      expect(data).toHaveLength(1);
+    });
+
+    describe('paginated', () => {
+      test('return all paginated', async () => {
+        await expect(
+          new UserResource().getAll({ paginated: true }),
+        ).resolves.toEqual({
+          meta: {
+            total: users.length,
+          },
+          data: users,
+        });
       });
     });
   });
