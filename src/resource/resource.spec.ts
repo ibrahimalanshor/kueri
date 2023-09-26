@@ -26,9 +26,13 @@ describe.only('class Resource', () => {
     async getAll(
       options?: GetAllOptions,
     ): Promise<User[] | PaginatedResource<User>> {
-      const userData = options?.sort
-        ? [...users].sort((user, nextUser) => nextUser.id - user.id)
-        : users;
+      const userData = options?.filter
+        ? users.filter((user) => user.id === options?.filter?.id)
+        : [...users];
+
+      if (options?.sort) {
+        userData.sort((user, nextUser) => nextUser.id - user.id);
+      }
 
       if (options?.paginated) {
         const offset =
@@ -94,6 +98,15 @@ describe.only('class Resource', () => {
       const data = (await new UserResource().getAll({ sort: '-id' })) as User[];
 
       expect(data[0]).toEqual(users[users.length - 1]);
+    });
+
+    test('return filtered', async () => {
+      const data = (await new UserResource().getAll({
+        filter: { id: 2 },
+      })) as User[];
+
+      expect(data).toHaveLength(1);
+      expect(data[0].id).toEqual(2);
     });
 
     describe('paginated', () => {
