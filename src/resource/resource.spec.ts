@@ -26,9 +26,11 @@ describe.only('class Resource', () => {
     async getAll(
       options?: GetAllOptions,
     ): Promise<User[] | PaginatedResource<User>> {
-      const data = options?.limit ? users.slice(0, options?.limit) : users;
-
       if (options?.paginated) {
+        const data = options?.page?.size
+          ? users.slice(0, options?.page?.size)
+          : users;
+
         return {
           meta: {
             total: users.length,
@@ -36,6 +38,8 @@ describe.only('class Resource', () => {
           data: data,
         };
       }
+
+      const data = options?.limit ? users.slice(0, options?.limit) : users;
 
       return data;
     }
@@ -74,6 +78,17 @@ describe.only('class Resource', () => {
           },
           data: users,
         });
+      });
+
+      test('return limited per page', async () => {
+        const data = (await new UserResource().getAll({
+          paginated: true,
+          page: {
+            size: 1,
+          },
+        })) as PaginatedResource<User>;
+
+        expect(data.data).toHaveLength(1);
       });
     });
   });
