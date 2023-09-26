@@ -1,22 +1,44 @@
 import { describe, expect, test } from '@jest/globals';
 import { Resource } from './resource';
-import { Router, application } from 'express';
 
 describe.only('class Resource', () => {
-  class UserResource extends Resource {}
+  interface User {
+    id: number;
+    name: string;
+  }
 
-  describe('.prototype.getRouter', () => {
+  const users: User[] = [
+    {
+      id: 1,
+      name: 'test',
+    },
+    {
+      id: 2,
+      name: 'user',
+    },
+  ];
+
+  class UserResource extends Resource<User> {
+    async getAll(): Promise<User[]> {
+      return users;
+    }
+  }
+
+  describe('.prototype.getAll', () => {
     test('exists', () => {
-      expect(UserResource.prototype.getRouter).toBeDefined();
+      expect(UserResource.prototype.getAll).toBeDefined();
     });
 
     test('callable', () => {
-      expect(typeof UserResource.prototype.getRouter).toBe('function');
+      expect(typeof UserResource.prototype.getAll).toBe('function');
     });
 
-    // how to check
-    test('return exress router', () => {
-      expect(typeof new UserResource().getRouter()).toBe('function');
+    test('return promise', () => {
+      expect(new UserResource().getAll()).toBeInstanceOf(Promise);
+    });
+
+    test('return all data', async () => {
+      await expect(new UserResource().getAll()).resolves.toEqual(users);
     });
   });
 });

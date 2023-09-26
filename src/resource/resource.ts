@@ -1,7 +1,3 @@
-import { Router } from 'express';
-
-export abstract class Resource {
-  getRouter(): Router {
-    return Router();
-  }
+export abstract class Resource<T> {
+  abstract getAll(): Promise<T[]>;
 }
