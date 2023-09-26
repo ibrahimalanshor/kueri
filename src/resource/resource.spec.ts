@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { Resource } from './resource';
+import { GetAllOptions, PaginatedResource, Resource } from './resource';
 
 describe.only('class Resource', () => {
   interface User {
@@ -19,7 +19,18 @@ describe.only('class Resource', () => {
   ];
 
   class UserResource extends Resource<User> {
-    async getAll(): Promise<User[]> {
+    async getAll(
+      options?: GetAllOptions,
+    ): Promise<User[] | PaginatedResource<User>> {
+      if (options?.paginated) {
+        return {
+          meta: {
+            total: users.length,
+          },
+          data: users,
+        };
+      }
+
       return users;
     }
   }
@@ -39,6 +50,17 @@ describe.only('class Resource', () => {
 
     test('return all data', async () => {
       await expect(new UserResource().getAll()).resolves.toEqual(users);
+    });
+
+    test('return all paginated data', async () => {
+      await expect(
+        new UserResource().getAll({ paginated: true }),
+      ).resolves.toEqual({
+        meta: {
+          total: users.length,
+        },
+        data: users,
+      });
     });
   });
 });
