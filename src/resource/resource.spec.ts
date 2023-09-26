@@ -5,6 +5,9 @@ describe.only('class Resource', () => {
   interface User {
     id: number;
     name: string;
+    profile?: {
+      description: string;
+    };
   }
 
   const users: User[] = [
@@ -26,9 +29,18 @@ describe.only('class Resource', () => {
     async getAll(
       options?: GetAllOptions,
     ): Promise<User[] | PaginatedResource<User>> {
-      const userData = options?.filter
+      let userData = options?.filter
         ? users.filter((user) => user.id === options?.filter?.id)
         : [...users];
+
+      if (options?.include) {
+        userData = userData.map((user) => ({
+          ...user,
+          profile: {
+            description: 'Description',
+          },
+        }));
+      }
 
       if (options?.sort) {
         userData.sort((user, nextUser) => nextUser.id - user.id);
@@ -98,6 +110,18 @@ describe.only('class Resource', () => {
       const data = (await new UserResource().getAll({ sort: '-id' })) as User[];
 
       expect(data[0]).toEqual(users[users.length - 1]);
+    });
+
+    test('return included', async () => {
+      const data = (await new UserResource().getAll({
+        include: 'profile',
+      })) as User[];
+
+      expect(
+        data.every((user) =>
+          Object.prototype.hasOwnProperty.call(user, 'profile'),
+        ),
+      ).toBe(true);
     });
 
     test('return filtered', async () => {

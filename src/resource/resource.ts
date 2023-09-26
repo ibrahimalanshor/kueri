@@ -8,6 +8,7 @@ export interface GetAllOptions {
   };
   sort?: string;
   filter?: Record<string, any>;
+  include?: string;
 }
 export interface PaginatedResource<T> {
   meta: {
