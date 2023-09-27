@@ -1,79 +1,79 @@
 import { describe, expect, test } from '@jest/globals';
 import { GetAllOptions, PaginatedResource, Resource } from './resource';
 
-describe.only('class Resource', () => {
-  interface User {
-    id: number;
-    name: string;
-    profile?: {
-      description: string;
-    };
-  }
+interface User {
+  id: number;
+  name: string;
+  profile?: {
+    description: string;
+  };
+}
 
-  const users: User[] = [
-    {
-      id: 1,
-      name: 'test',
-    },
-    {
-      id: 2,
-      name: 'user',
-    },
-    {
-      id: 3,
-      name: 'another',
-    },
-  ];
+const users: User[] = [
+  {
+    id: 1,
+    name: 'test',
+  },
+  {
+    id: 2,
+    name: 'user',
+  },
+  {
+    id: 3,
+    name: 'another',
+  },
+];
 
-  class UserResource extends Resource<User> {
-    async getAll(
-      options?: GetAllOptions,
-    ): Promise<User[] | PaginatedResource<User>> {
-      let userData = options?.filter
-        ? users.filter((user) => user.id === options?.filter?.id)
-        : [...users];
+class UserResource extends Resource<User> {
+  async getAll(
+    options?: GetAllOptions,
+  ): Promise<User[] | PaginatedResource<User>> {
+    let userData = options?.filter
+      ? users.filter((user) => user.id === options?.filter?.id)
+      : [...users];
 
-      if (options?.include) {
-        userData = userData.map((user) => ({
-          ...user,
-          profile: {
-            description: 'Description',
-          },
-        }));
-      }
+    if (options?.include) {
+      userData = userData.map((user) => ({
+        ...user,
+        profile: {
+          description: 'Description',
+        },
+      }));
+    }
 
-      if (options?.sort) {
-        userData.sort((user, nextUser) => nextUser.id - user.id);
-      }
+    if (options?.sort) {
+      userData.sort((user, nextUser) => nextUser.id - user.id);
+    }
 
-      if (options?.paginated) {
-        const offset =
-          ((options?.page?.number ?? 1) - 1) * (options?.page?.size ?? 10);
-        const data =
-          options?.page?.size || offset
-            ? userData.slice(offset, (options?.page?.size ?? 10) + offset)
-            : userData;
-
-        return {
-          meta: {
-            total: userData.length,
-          },
-          data: data,
-        };
-      }
-
+    if (options?.paginated) {
+      const offset =
+        ((options?.page?.number ?? 1) - 1) * (options?.page?.size ?? 10);
       const data =
-        options?.limit || options?.offset
-          ? userData.slice(
-              options?.offset ?? 0,
-              (options?.limit ?? 10) + (options?.offset ?? 0),
-            )
+        options?.page?.size || offset
+          ? userData.slice(offset, (options?.page?.size ?? 10) + offset)
           : userData;
 
-      return data;
+      return {
+        meta: {
+          total: userData.length,
+        },
+        data: data,
+      };
     }
-  }
 
+    const data =
+      options?.limit || options?.offset
+        ? userData.slice(
+            options?.offset ?? 0,
+            (options?.limit ?? 10) + (options?.offset ?? 0),
+          )
+        : userData;
+
+    return data;
+  }
+}
+
+describe.only('class Resource', () => {
   describe('.prototype.getAll', () => {
     test('exists', () => {
       expect(UserResource.prototype.getAll).toBeDefined();
