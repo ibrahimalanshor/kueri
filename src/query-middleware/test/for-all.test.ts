@@ -1,33 +1,21 @@
-import { beforeAll, describe, expect, test } from '@jest/globals';
-import { QueryMiddleware } from '../query-middleware';
-import { createServer } from '../../helpers/server';
-import supertest from 'supertest';
-import { Application, Handler, Request, Response } from 'express';
+import { describe, expect, test } from '@jest/globals';
+import { QueryForAllParser } from '../query-for-all-parser';
+import { QueryError } from '../../errors/query.error';
 
-describe('QueryMiddleware.prototype.forAll', () => {
-  const server = createServer();
-
-  server.get(
-    '/',
-    new QueryMiddleware().forAll(),
-    (req: Request, res: Response) => res.status(200).json(req.query),
-  );
-
+describe('QueryForAllParser.prototype.make', () => {
   test('callable', () => {
-    expect(QueryMiddleware.prototype.forAll).toBeDefined();
-    expect(typeof QueryMiddleware.prototype.forAll).toBe('function');
+    expect(QueryForAllParser.prototype.make).toBeDefined();
+    expect(typeof QueryForAllParser.prototype.make).toBe('function');
   });
 
-  test('return handler', () => {
-    expect(typeof new QueryMiddleware().forAll()).toBe('function');
+  test('return promise', () => {
+    expect(new QueryForAllParser().make({})).toBeInstanceOf(Promise);
   });
 
   // page
   describe('page', () => {
-    test('no page query return 200', async () => {
-      const res = await supertest(server).get('/').expect(200);
-
-      expect(res.body).toEqual(
+    test('return default', async () => {
+      await expect(new QueryForAllParser().make({})).resolves.toEqual(
         expect.objectContaining({
           page: {
             number: 1,
@@ -37,34 +25,27 @@ describe('QueryMiddleware.prototype.forAll', () => {
       );
     });
 
-    test('page query is not object return 400', async () => {
-      const res = await supertest(server)
-        .get('/')
-        .query({
+    test('must be an object', async () => {
+      await expect(
+        new QueryForAllParser().make({
           page: 'invalid',
-        })
-        .expect(400);
-
-      expect(res.body).toEqual({
-        status: 400,
-        title: 'Query Invalid',
-        details: {
-          page: 'page must be an object',
-        },
-      });
+        }),
+      ).rejects.toThrow(QueryError);
+      await expect(
+        new QueryForAllParser().make({
+          page: 'invalid',
+        }),
+      ).rejects.toThrow('page must be an object');
     });
 
     // page number
     describe('page.number', () => {
-      test('no page.number return 200', async () => {
-        const res = await supertest(server)
-          .get('/')
-          .query({
+      test('return default', async () => {
+        await expect(
+          new QueryForAllParser().make({
             page: {},
-          })
-          .expect(200);
-
-        expect(res.body).toEqual(
+          }),
+        ).resolves.toEqual(
           expect.objectContaining({
             page: {
               number: 1,
@@ -74,55 +55,48 @@ describe('QueryMiddleware.prototype.forAll', () => {
         );
       });
 
-      test('page.number nan return 400', async () => {
-        const res = await supertest(server)
-          .get('/')
-          .query({
+      test('must be a number', async () => {
+        await expect(
+          new QueryForAllParser().make({
             page: {
               number: 'test',
             },
-          })
-          .expect(400);
-
-        expect(res.body).toEqual({
-          status: 400,
-          title: 'Query Invalid',
-          details: {
-            'page.number': 'page number must be a number',
-          },
-        });
+          }),
+        ).rejects.toThrow(QueryError);
+        await expect(
+          new QueryForAllParser().make({
+            page: {
+              number: 'test',
+            },
+          }),
+        ).rejects.toThrow('page number must be a number');
       });
 
-      test('page.number negative return 400', async () => {
-        const res = await supertest(server)
-          .get('/')
-          .query({
+      test('must be a positive number', async () => {
+        await expect(
+          new QueryForAllParser().make({
             page: {
               number: -5,
             },
-          })
-          .expect(400);
-
-        expect(res.body).toEqual({
-          status: 400,
-          title: 'Query Invalid',
-          details: {
-            'page.number': 'page number must be a positive number',
-          },
-        });
+          }),
+        ).rejects.toThrow(QueryError);
+        await expect(
+          new QueryForAllParser().make({
+            page: {
+              number: -5,
+            },
+          }),
+        ).rejects.toThrow('page number must be a positive number');
       });
 
-      test('page.number return valid', async () => {
-        const res = await supertest(server)
-          .get('/')
-          .query({
+      test('return page number', async () => {
+        await expect(
+          new QueryForAllParser().make({
             page: {
               number: 5,
             },
-          })
-          .expect(200);
-
-        expect(res.body).toEqual(
+          }),
+        ).resolves.toEqual(
           expect.objectContaining({
             page: {
               number: 5,
@@ -133,17 +107,14 @@ describe('QueryMiddleware.prototype.forAll', () => {
       });
     });
 
-    // page size
+    // page suze
     describe('page.size', () => {
-      test('no page.size return 200', async () => {
-        const res = await supertest(server)
-          .get('/')
-          .query({
+      test('return default', async () => {
+        await expect(
+          new QueryForAllParser().make({
             page: {},
-          })
-          .expect(200);
-
-        expect(res.body).toEqual(
+          }),
+        ).resolves.toEqual(
           expect.objectContaining({
             page: {
               number: 1,
@@ -153,59 +124,52 @@ describe('QueryMiddleware.prototype.forAll', () => {
         );
       });
 
-      test('page.size nan return 400', async () => {
-        const res = await supertest(server)
-          .get('/')
-          .query({
+      test('must be a number', async () => {
+        await expect(
+          new QueryForAllParser().make({
             page: {
               size: 'test',
             },
-          })
-          .expect(400);
-
-        expect(res.body).toEqual({
-          status: 400,
-          title: 'Query Invalid',
-          details: {
-            'page.size': 'page size must be a number',
-          },
-        });
+          }),
+        ).rejects.toThrow(QueryError);
+        await expect(
+          new QueryForAllParser().make({
+            page: {
+              size: 'test',
+            },
+          }),
+        ).rejects.toThrow('page size must be a number');
       });
 
-      test('page.size negative return 400', async () => {
-        const res = await supertest(server)
-          .get('/')
-          .query({
+      test('must be a positive number', async () => {
+        await expect(
+          new QueryForAllParser().make({
             page: {
               size: -5,
             },
-          })
-          .expect(400);
-
-        expect(res.body).toEqual({
-          status: 400,
-          title: 'Query Invalid',
-          details: {
-            'page.size': 'page size must be a positive number',
-          },
-        });
+          }),
+        ).rejects.toThrow(QueryError);
+        await expect(
+          new QueryForAllParser().make({
+            page: {
+              size: -5,
+            },
+          }),
+        ).rejects.toThrow('page size must be a positive number');
       });
 
-      test('page.size return valid', async () => {
-        const res = await supertest(server)
-          .get('/')
-          .query({
+      test('return page size', async () => {
+        await expect(
+          new QueryForAllParser().make({
             page: {
-              size: 50,
+              size: 5,
             },
-          })
-          .expect(200);
-
-        expect(res.body).toEqual(
+          }),
+        ).resolves.toEqual(
           expect.objectContaining({
             page: {
+              size: 5,
               number: 1,
-              size: 50,
             },
           }),
         );
@@ -215,42 +179,37 @@ describe('QueryMiddleware.prototype.forAll', () => {
 
   // filter
   describe('filter', () => {
-    test('no filter query return 200', async () => {
-      const res = await supertest(server).get('/').expect(200);
-
-      expect(res.body).toEqual(
+    test('return default', async () => {
+      await expect(
+        new QueryForAllParser().make({
+          filter: {},
+        }),
+      ).resolves.toEqual(
         expect.objectContaining({
           filter: {},
         }),
       );
     });
 
-    test('filter is not object return 400', async () => {
-      const res = await supertest(server)
-        .get('/')
-        .query({ filter: 'invalid' })
-        .expect(400);
-
-      expect(res.body).toEqual({
-        status: 400,
-        title: 'Query Invalid',
-        details: {
-          filter: 'filter must be an object',
-        },
-      });
+    test('must be an object', async () => {
+      await expect(
+        new QueryForAllParser().make({
+          filter: 'invalid',
+        }),
+      ).rejects.toThrow(QueryError);
+      await expect(
+        new QueryForAllParser().make({
+          filter: 'invalid',
+        }),
+      ).rejects.toThrow('filter must be an object');
     });
 
-    test('filter return valid', async () => {
-      const res = await supertest(server)
-        .get('/')
-        .query({
-          filter: {
-            name: 'test',
-          },
-        })
-        .expect(200);
-
-      expect(res.body).toEqual(
+    test('return filter', async () => {
+      await expect(
+        new QueryForAllParser().make({
+          filter: { name: 'test' },
+        }),
+      ).resolves.toEqual(
         expect.objectContaining({
           filter: {
             name: 'test',
@@ -262,40 +221,29 @@ describe('QueryMiddleware.prototype.forAll', () => {
 
   // sort
   describe('sort', () => {
-    test('no sort return 200', async () => {
-      const res = await supertest(server).get('/').expect(200);
-
-      expect(res.body).toEqual(
+    test('return default', async () => {
+      await expect(new QueryForAllParser().make({})).resolves.toEqual(
         expect.objectContaining({
           sort: {},
         }),
       );
     });
 
-    test('sort is not object return 400', async () => {
-      const res = await supertest(server)
-        .get('/')
-        .query({ sort: [1, 2, 3] })
-        .expect(400);
-
-      expect(res.body).toEqual({
-        status: 400,
-        title: 'Query Invalid',
-        details: {
-          sort: 'sort must be a string',
-        },
-      });
+    test('must be a string', async () => {
+      await expect(
+        new QueryForAllParser().make({ sort: [1, 2, 3] }),
+      ).rejects.toThrow(QueryError);
+      await expect(
+        new QueryForAllParser().make({ sort: [1, 2, 3] }),
+      ).rejects.toThrow('sort must be a string');
     });
 
-    test('sort return valid', async () => {
-      const res = await supertest(server)
-        .get('/')
-        .query({
+    test('return sort', async () => {
+      await expect(
+        new QueryForAllParser().make({
           sort: '-name,age',
-        })
-        .expect(200);
-
-      expect(res.body).toEqual(
+        }),
+      ).resolves.toEqual(
         expect.objectContaining({
           sort: {
             name: 'desc',
@@ -308,40 +256,29 @@ describe('QueryMiddleware.prototype.forAll', () => {
 
   // include
   describe('include', () => {
-    test('no include return 200', async () => {
-      const res = await supertest(server).get('/').expect(200);
-
-      expect(res.body).toEqual(
+    test('return default', async () => {
+      await expect(new QueryForAllParser().make({})).resolves.toEqual(
         expect.objectContaining({
           include: [],
         }),
       );
     });
 
-    test('include is not object return 400', async () => {
-      const res = await supertest(server)
-        .get('/')
-        .query({ include: [1, 2, 3] })
-        .expect(400);
-
-      expect(res.body).toEqual({
-        status: 400,
-        title: 'Query Invalid',
-        details: {
-          include: 'include must be a string',
-        },
-      });
+    test('must be a string', async () => {
+      await expect(
+        new QueryForAllParser().make({ include: [1, 2, 3] }),
+      ).rejects.toThrow(QueryError);
+      await expect(
+        new QueryForAllParser().make({ include: [1, 2, 3] }),
+      ).rejects.toThrow('include must be a string');
     });
 
-    test('include return valid', async () => {
-      const res = await supertest(server)
-        .get('/')
-        .query({
+    test('return include', async () => {
+      await expect(
+        new QueryForAllParser().make({
           include: 'project,articles',
-        })
-        .expect(200);
-
-      expect(res.body).toEqual(
+        }),
+      ).resolves.toEqual(
         expect.objectContaining({
           include: ['project', 'articles'],
         }),
