@@ -239,5 +239,67 @@ describe('QueryMiddleware.prototype.forAll', () => {
         },
       });
     });
+
+    test('filter return valid', async () => {
+      const res = await supertest(server)
+        .get('/')
+        .query({
+          filter: {
+            name: 'test',
+          },
+        })
+        .expect(200);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          filter: {
+            name: 'test',
+          },
+        }),
+      );
+    });
+  });
+
+  // sort
+  describe('sort', () => {
+    test('no sort sort return 200', async () => {
+      const res = await supertest(server).get('/').expect(200);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          sort: null,
+        }),
+      );
+    });
+
+    test('sort is not object return 400', async () => {
+      const res = await supertest(server)
+        .get('/')
+        .query({ sort: [1, 2, 3] })
+        .expect(400);
+
+      expect(res.body).toEqual({
+        status: 400,
+        title: 'Query Invalid',
+        details: {
+          sort: 'sort must be a string',
+        },
+      });
+    });
+
+    test('sort return valid', async () => {
+      const res = await supertest(server)
+        .get('/')
+        .query({
+          sort: 'name',
+        })
+        .expect(200);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          sort: 'name',
+        }),
+      );
+    });
   });
 });
