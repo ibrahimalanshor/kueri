@@ -1,20 +1,18 @@
-import { describe, expect, test } from '@jest/globals';
+import { beforeAll, describe, expect, test } from '@jest/globals';
 import { QueryMiddleware } from '../query-middleware';
 import { createServer } from '../../helpers/server';
 import supertest from 'supertest';
 import { Application, Handler, Request, Response } from 'express';
 
-function createTestServer(handler: Handler): Application {
+describe('QueryMiddleware.prototype.forAll', () => {
   const server = createServer();
 
-  server.get('/', handler, (req: Request, res: Response) =>
-    res.status(200).json(req.query),
+  server.get(
+    '/',
+    new QueryMiddleware().forAll(),
+    (req: Request, res: Response) => res.status(200).json(req.query),
   );
 
-  return server;
-}
-
-describe('QueryMiddleware.prototype.forAll', () => {
   test('callable', () => {
     expect(QueryMiddleware.prototype.forAll).toBeDefined();
     expect(typeof QueryMiddleware.prototype.forAll).toBe('function');
@@ -27,21 +25,19 @@ describe('QueryMiddleware.prototype.forAll', () => {
   // page
   describe('page', () => {
     test('no page query return 200', async () => {
-      const server = createTestServer(new QueryMiddleware().forAll());
-
       const res = await supertest(server).get('/').expect(200);
 
-      expect(res.body).toEqual({
-        page: {
-          number: 1,
-          size: 10,
-        },
-      });
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          page: {
+            number: 1,
+            size: 10,
+          },
+        }),
+      );
     });
 
-    test('page query nan return 400', async () => {
-      const server = createTestServer(new QueryMiddleware().forAll());
-
+    test('page query is not object return 400', async () => {
       const res = await supertest(server)
         .get('/')
         .query({
@@ -61,8 +57,6 @@ describe('QueryMiddleware.prototype.forAll', () => {
     // page number
     describe('page.number', () => {
       test('no page.number return 200', async () => {
-        const server = createTestServer(new QueryMiddleware().forAll());
-
         const res = await supertest(server)
           .get('/')
           .query({
@@ -70,17 +64,17 @@ describe('QueryMiddleware.prototype.forAll', () => {
           })
           .expect(200);
 
-        expect(res.body).toEqual({
-          page: {
-            number: 1,
-            size: 10,
-          },
-        });
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            page: {
+              number: 1,
+              size: 10,
+            },
+          }),
+        );
       });
 
       test('page.number nan return 400', async () => {
-        const server = createTestServer(new QueryMiddleware().forAll());
-
         const res = await supertest(server)
           .get('/')
           .query({
@@ -100,8 +94,6 @@ describe('QueryMiddleware.prototype.forAll', () => {
       });
 
       test('page.number negative return 400', async () => {
-        const server = createTestServer(new QueryMiddleware().forAll());
-
         const res = await supertest(server)
           .get('/')
           .query({
@@ -121,8 +113,6 @@ describe('QueryMiddleware.prototype.forAll', () => {
       });
 
       test('page.number return valid', async () => {
-        const server = createTestServer(new QueryMiddleware().forAll());
-
         const res = await supertest(server)
           .get('/')
           .query({
@@ -132,20 +122,20 @@ describe('QueryMiddleware.prototype.forAll', () => {
           })
           .expect(200);
 
-        expect(res.body).toEqual({
-          page: {
-            number: 5,
-            size: 10,
-          },
-        });
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            page: {
+              number: 5,
+              size: 10,
+            },
+          }),
+        );
       });
     });
 
     // page size
     describe('page.size', () => {
       test('no page.size return 200', async () => {
-        const server = createTestServer(new QueryMiddleware().forAll());
-
         const res = await supertest(server)
           .get('/')
           .query({
@@ -153,17 +143,17 @@ describe('QueryMiddleware.prototype.forAll', () => {
           })
           .expect(200);
 
-        expect(res.body).toEqual({
-          page: {
-            number: 1,
-            size: 10,
-          },
-        });
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            page: {
+              number: 1,
+              size: 10,
+            },
+          }),
+        );
       });
 
       test('page.size nan return 400', async () => {
-        const server = createTestServer(new QueryMiddleware().forAll());
-
         const res = await supertest(server)
           .get('/')
           .query({
@@ -183,8 +173,6 @@ describe('QueryMiddleware.prototype.forAll', () => {
       });
 
       test('page.size negative return 400', async () => {
-        const server = createTestServer(new QueryMiddleware().forAll());
-
         const res = await supertest(server)
           .get('/')
           .query({
@@ -204,8 +192,6 @@ describe('QueryMiddleware.prototype.forAll', () => {
       });
 
       test('page.size return valid', async () => {
-        const server = createTestServer(new QueryMiddleware().forAll());
-
         const res = await supertest(server)
           .get('/')
           .query({
@@ -215,12 +201,42 @@ describe('QueryMiddleware.prototype.forAll', () => {
           })
           .expect(200);
 
-        expect(res.body).toEqual({
-          page: {
-            number: 1,
-            size: 50,
-          },
-        });
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            page: {
+              number: 1,
+              size: 50,
+            },
+          }),
+        );
+      });
+    });
+  });
+
+  // filter
+  describe('filter', () => {
+    test('no filter query return 200', async () => {
+      const res = await supertest(server).get('/').expect(200);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          filter: {},
+        }),
+      );
+    });
+
+    test('filter is not object return 400', async () => {
+      const res = await supertest(server)
+        .get('/')
+        .query({ filter: 'invalid' })
+        .expect(400);
+
+      expect(res.body).toEqual({
+        status: 400,
+        title: 'Query Invalid',
+        details: {
+          filter: 'filter must be an object',
+        },
       });
     });
   });

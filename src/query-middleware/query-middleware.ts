@@ -6,6 +6,7 @@ interface QueryForAll {
     size: number;
     number: number;
   };
+  filter: {};
 }
 
 export class QueryMiddleware {
@@ -22,6 +23,9 @@ export class QueryMiddleware {
     }).messages({
       'object.base': 'page must be an object',
     }),
+    filter: Joi.object().messages({
+      'object.base': 'filter must be an object',
+    }),
   });
 
   private parseQueryForAll(query: Record<string, any>): QueryForAll {
@@ -30,6 +34,7 @@ export class QueryMiddleware {
         size: Number(query?.page?.size ?? 10),
         number: Number(query?.page?.number ?? 1),
       },
+      filter: {},
     };
   }
 
