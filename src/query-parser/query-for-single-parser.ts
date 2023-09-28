@@ -1,14 +1,9 @@
 import Joi, { Schema } from 'joi';
 import { QueryParser } from './query-parser';
-import { RawQuery, QueryForAll } from './types';
-import {
-  parsePage,
-  parseInclude,
-  parseSort,
-  parseFilter,
-} from './query-helper';
+import { RawQuery, QueryForSingle } from './types';
+import { parseInclude } from './query-helper';
 
-export class QueryForAllParser extends QueryParser<QueryForAll> {
+export class QueryForSingleParser extends QueryParser<QueryForSingle> {
   schema(): Schema {
     return Joi.object({
       page: Joi.object({
@@ -34,12 +29,9 @@ export class QueryForAllParser extends QueryParser<QueryForAll> {
       }),
     });
   }
-  parse(query: RawQuery): QueryForAll {
+  parse(query: RawQuery): QueryForSingle {
     return {
-      page: parsePage(query.page),
       include: parseInclude(query.include),
-      sort: parseSort(query.sort),
-      filter: parseFilter(query.filter),
     };
   }
 }
