@@ -24,11 +24,11 @@ export class QueryMiddleware {
     }),
   });
 
-  private createRequestQuery(query: Request['query']): QueryForAll {
+  private parseQueryForAll(query: Record<string, any>): QueryForAll {
     return {
       page: {
-        size: 10,
-        number: 1,
+        size: Number(query?.page?.size ?? 10),
+        number: Number(query?.page?.number ?? 1),
       },
     };
   }
@@ -38,8 +38,8 @@ export class QueryMiddleware {
       try {
         await this.schema.validateAsync(req.query);
 
-        req.query = this.createRequestQuery(
-          req.query,
+        req.query = this.parseQueryForAll(
+          req.query as Record<string, any>,
         ) as unknown as Request['query'];
 
         return next();
