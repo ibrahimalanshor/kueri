@@ -14,3 +14,6 @@ export interface QueryForAll {
   sort: Sort;
   filter: Filter;
 }
+export interface QueryForSingle {
+  include: Include;
+}
