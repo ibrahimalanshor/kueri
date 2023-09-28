@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { QueryForAllParser } from '../query-for-all-parser';
-import { QueryError } from '../../errors/query.error';
+import { ValidationError } from '../../errors/validation.error';
 
 describe('QueryForAllParser.prototype.make', () => {
   test('callable', () => {
@@ -30,7 +30,7 @@ describe('QueryForAllParser.prototype.make', () => {
         new QueryForAllParser().make({
           page: 'invalid',
         }),
-      ).rejects.toThrow(QueryError);
+      ).rejects.toThrow(ValidationError);
       await expect(
         new QueryForAllParser().make({
           page: 'invalid',
@@ -62,7 +62,7 @@ describe('QueryForAllParser.prototype.make', () => {
               number: 'test',
             },
           }),
-        ).rejects.toThrow(QueryError);
+        ).rejects.toThrow(ValidationError);
         await expect(
           new QueryForAllParser().make({
             page: {
@@ -79,7 +79,7 @@ describe('QueryForAllParser.prototype.make', () => {
               number: -5,
             },
           }),
-        ).rejects.toThrow(QueryError);
+        ).rejects.toThrow(ValidationError);
         await expect(
           new QueryForAllParser().make({
             page: {
@@ -131,7 +131,7 @@ describe('QueryForAllParser.prototype.make', () => {
               size: 'test',
             },
           }),
-        ).rejects.toThrow(QueryError);
+        ).rejects.toThrow(ValidationError);
         await expect(
           new QueryForAllParser().make({
             page: {
@@ -148,7 +148,7 @@ describe('QueryForAllParser.prototype.make', () => {
               size: -5,
             },
           }),
-        ).rejects.toThrow(QueryError);
+        ).rejects.toThrow(ValidationError);
         await expect(
           new QueryForAllParser().make({
             page: {
@@ -196,7 +196,7 @@ describe('QueryForAllParser.prototype.make', () => {
         new QueryForAllParser().make({
           filter: 'invalid',
         }),
-      ).rejects.toThrow(QueryError);
+      ).rejects.toThrow(ValidationError);
       await expect(
         new QueryForAllParser().make({
           filter: 'invalid',
@@ -232,7 +232,7 @@ describe('QueryForAllParser.prototype.make', () => {
     test('must be a string', async () => {
       await expect(
         new QueryForAllParser().make({ sort: [1, 2, 3] }),
-      ).rejects.toThrow(QueryError);
+      ).rejects.toThrow(ValidationError);
       await expect(
         new QueryForAllParser().make({ sort: [1, 2, 3] }),
       ).rejects.toThrow('sort must be a string');
@@ -267,7 +267,7 @@ describe('QueryForAllParser.prototype.make', () => {
     test('must be a string', async () => {
       await expect(
         new QueryForAllParser().make({ include: [1, 2, 3] }),
-      ).rejects.toThrow(QueryError);
+      ).rejects.toThrow(ValidationError);
       await expect(
         new QueryForAllParser().make({ include: [1, 2, 3] }),
       ).rejects.toThrow('include must be a string');

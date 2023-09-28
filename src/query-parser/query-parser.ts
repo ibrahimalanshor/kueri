@@ -1,6 +1,6 @@
 import Joi, { Schema } from 'joi';
 import { ParsedQuery, RawQuery } from './types';
-import { QueryError } from '../errors/query.error';
+import { ValidationError } from '../errors/validation.error';
 
 export abstract class QueryParser<T extends ParsedQuery> {
   abstract schema(): Schema;
@@ -17,13 +17,13 @@ export abstract class QueryParser<T extends ParsedQuery> {
       return await this.schema().validateAsync(query);
     } catch (err) {
       if (err instanceof Joi.ValidationError) {
-        throw new QueryError({
+        throw new ValidationError({
           name: 'ValidationError',
           message: err.details[0].message,
         });
       }
 
-      throw new QueryError({
+      throw new ValidationError({
         name: 'ValidationError',
         message: 'Validation Error',
       });
