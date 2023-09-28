@@ -291,13 +291,16 @@ describe('QueryMiddleware.prototype.forAll', () => {
       const res = await supertest(server)
         .get('/')
         .query({
-          sort: 'name',
+          sort: '-name,age',
         })
         .expect(200);
 
       expect(res.body).toEqual(
         expect.objectContaining({
-          sort: 'name',
+          sort: {
+            name: 'desc',
+            age: 'asc',
+          },
         }),
       );
     });

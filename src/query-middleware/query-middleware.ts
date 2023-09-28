@@ -1,13 +1,14 @@
 import { Handler, Request, Response, NextFunction, query } from 'express';
 import Joi from 'joi';
 
+type Sort = Record<string, 'asc' | 'desc'>;
 interface QueryForAll {
   page: {
     size: number;
     number: number;
   };
   filter: {};
-  sort: string | null;
+  sort: Sort | null;
 }
 
 export class QueryMiddleware {
@@ -32,6 +33,16 @@ export class QueryMiddleware {
     }),
   });
 
+  private parseSort(sort: string): Sort {
+    return Object.fromEntries(
+      sort.split(',').map((prop) => {
+        const isDesc = prop.charAt(0) === '-';
+
+        return [isDesc ? prop.slice(1) : prop, isDesc ? 'desc' : 'asc'];
+      }),
+    );
+  }
+
   private parseQueryForAll(query: Record<string, any>): QueryForAll {
     return {
       page: {
@@ -39,7 +50,7 @@ export class QueryMiddleware {
         number: Number(query?.page?.number ?? 1),
       },
       filter: query.filter ?? {},
-      sort: query.sort ?? null,
+      sort: query.sort ? this.parseSort(query.sort) : null,
     };
   }
 
