@@ -1,3 +1,3 @@
-import { BaseError } from './base.error';
+import { BaseError } from 'galat';
 
 export class ValidationError extends BaseError<'ValidationError'> {}
