@@ -262,12 +262,12 @@ describe('QueryMiddleware.prototype.forAll', () => {
 
   // sort
   describe('sort', () => {
-    test('no sort sort return 200', async () => {
+    test('no sort return 200', async () => {
       const res = await supertest(server).get('/').expect(200);
 
       expect(res.body).toEqual(
         expect.objectContaining({
-          sort: null,
+          sort: {},
         }),
       );
     });
@@ -301,6 +301,49 @@ describe('QueryMiddleware.prototype.forAll', () => {
             name: 'desc',
             age: 'asc',
           },
+        }),
+      );
+    });
+  });
+
+  // include
+  describe('include', () => {
+    test('no include return 200', async () => {
+      const res = await supertest(server).get('/').expect(200);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          include: [],
+        }),
+      );
+    });
+
+    test('include is not object return 400', async () => {
+      const res = await supertest(server)
+        .get('/')
+        .query({ include: [1, 2, 3] })
+        .expect(400);
+
+      expect(res.body).toEqual({
+        status: 400,
+        title: 'Query Invalid',
+        details: {
+          include: 'include must be a string',
+        },
+      });
+    });
+
+    test('include return valid', async () => {
+      const res = await supertest(server)
+        .get('/')
+        .query({
+          include: 'project,articles',
+        })
+        .expect(200);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          include: ['project', 'articles'],
         }),
       );
     });

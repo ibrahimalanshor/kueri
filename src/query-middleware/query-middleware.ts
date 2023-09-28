@@ -1,5 +1,5 @@
 import { Handler, Request, Response, NextFunction, query } from 'express';
-import Joi from 'joi';
+import Joi, { string } from 'joi';
 
 type Sort = Record<string, 'asc' | 'desc'>;
 interface QueryForAll {
@@ -8,7 +8,8 @@ interface QueryForAll {
     number: number;
   };
   filter: {};
-  sort: Sort | null;
+  sort: Sort;
+  include: string[];
 }
 
 export class QueryMiddleware {
@@ -31,6 +32,9 @@ export class QueryMiddleware {
     sort: Joi.string().messages({
       'string.base': 'sort must be a string',
     }),
+    include: Joi.string().messages({
+      'string.base': 'include must be a string',
+    }),
   });
 
   private parseSort(sort: string): Sort {
@@ -43,6 +47,10 @@ export class QueryMiddleware {
     );
   }
 
+  private parseInclude(include: string): string[] {
+    return include.split(',');
+  }
+
   private parseQueryForAll(query: Record<string, any>): QueryForAll {
     return {
       page: {
@@ -50,7 +58,8 @@ export class QueryMiddleware {
         number: Number(query?.page?.number ?? 1),
       },
       filter: query.filter ?? {},
-      sort: query.sort ? this.parseSort(query.sort) : null,
+      sort: query.sort ? this.parseSort(query.sort) : {},
+      include: query.include ? this.parseInclude(query.include) : [],
     };
   }
 
